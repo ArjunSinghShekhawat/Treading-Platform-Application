@@ -1,10 +1,10 @@
-package com.treadingPlatformApplication.models;
+package com.treadingPlatformApplication.request;
 
 import com.treadingPlatformApplication.domain.VerificationType;
 import lombok.Data;
 
 @Data
-public class TwoFactorAuth {
-    private boolean isEnabled;
+public class ForgetPasswordTokenReq {
+    private String sendTo;
     private VerificationType verificationType;
 }
