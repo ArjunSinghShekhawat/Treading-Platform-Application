@@ -4,6 +4,7 @@ import com.treadingPlatformApplication.domain.OrderType;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -21,6 +22,8 @@ public class Order {
 
     @Column(nullable = false)
     private BigDecimal price;
+
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     @Column(nullable = false)
     private OrderStatus orderStatus;

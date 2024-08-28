@@ -1,9 +1,7 @@
 package com.treadingPlatformApplication.models;
-
 import com.treadingPlatformApplication.domain.WalletTransactionType;
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDate;
 
 @Entity
@@ -23,5 +21,4 @@ public class WalletTransaction {
 
     private String purpose;
     private  long amount;
-
 }
