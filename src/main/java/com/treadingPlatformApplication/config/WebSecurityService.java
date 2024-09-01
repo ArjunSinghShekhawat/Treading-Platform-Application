@@ -33,7 +33,7 @@ public class WebSecurityService {
             public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                 CorsConfiguration cf = new CorsConfiguration();
                 cf.setAllowedOrigins(
-                        Arrays.asList("http://localhost:5173","http://localhost:3000")
+                        Arrays.asList("http://localhost:5173","http://localhost:3000","https://main--treading.netlify.app/")
                 );
                 cf.setAllowedMethods(Collections.singletonList("*"));
                 cf.setAllowCredentials(true);
