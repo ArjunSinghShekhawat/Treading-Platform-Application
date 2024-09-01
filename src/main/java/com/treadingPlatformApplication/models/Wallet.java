@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 @Entity
 public class Wallet {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @OneToOne
     private User user;
 
-    private BigDecimal balance;
+    private BigDecimal balance=BigDecimal.valueOf(0);
 }

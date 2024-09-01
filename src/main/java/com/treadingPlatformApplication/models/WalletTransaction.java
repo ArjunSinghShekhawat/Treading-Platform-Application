@@ -17,7 +17,7 @@ public class WalletTransaction {
     private WalletTransactionType walletTransactionType;
     private LocalDate date;
 
-    private String transferId;
+    private Long transferId;
 
     private String purpose;
     private  long amount;

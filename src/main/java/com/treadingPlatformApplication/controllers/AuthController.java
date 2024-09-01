@@ -5,6 +5,7 @@ import com.treadingPlatformApplication.models.User;
 import com.treadingPlatformApplication.responce.AuthResponce;
 import com.treadingPlatformApplication.service.TwoFactorOtpService;
 import com.treadingPlatformApplication.service.UserService;
+import com.treadingPlatformApplication.service.WatchListService;
 import com.treadingPlatformApplication.service.implement.CustomeUserDetails;
 import com.treadingPlatformApplication.service.implement.EmailService;
 import com.treadingPlatformApplication.utils.OtpUtils;
@@ -39,6 +40,9 @@ public class AuthController {
     @Autowired
     private CustomeUserDetails customeUserDetails;
 
+    @Autowired
+    private WatchListService watchListService;
+
 
     //sign up controller
     @PostMapping("/signup")
@@ -61,6 +65,8 @@ public class AuthController {
 
         //new user saved successfully
         User savedUser = this.userService.saveUser(user);
+
+        this.watchListService.createWatchList(savedUser);
 
         //jwt token creation
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(),user.getPassword());

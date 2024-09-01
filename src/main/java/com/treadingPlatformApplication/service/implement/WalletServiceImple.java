@@ -7,8 +7,11 @@ import com.treadingPlatformApplication.models.Wallet;
 import com.treadingPlatformApplication.repositories.WalletRepository;
 import com.treadingPlatformApplication.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 
+@Service
 public class WalletServiceImple implements WalletService {
 
     @Autowired
@@ -21,6 +24,7 @@ public class WalletServiceImple implements WalletService {
         if(wallet==null){
             wallet = new Wallet();
             wallet.setUser(user);
+            this.walletRepository.save(wallet);
         }
         return wallet;
     }

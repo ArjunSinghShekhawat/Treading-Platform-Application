@@ -24,7 +24,13 @@ public class CoinController {
     public ResponseEntity<List<Coin>>getCoinList(@RequestParam(name = "page",required = false) int page){
        List<Coin>coinList =  this.coinService.getCoinList(page);
        return new ResponseEntity<>(coinList, HttpStatus.OK);
+    } 
+    @GetMapping("/{coinId}")
+    public ResponseEntity<Coin>findById(@PathVariable String coinId){
+        Coin coin = this.coinService.findById(coinId);
+        return new ResponseEntity<>(coin, HttpStatus.OK);
     }
+
 
     @GetMapping("/{coinId}/chart")
     public ResponseEntity<JsonNode>getMarketChart(@PathVariable String coinId,@RequestParam(name = "days") int days){

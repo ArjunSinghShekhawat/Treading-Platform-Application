@@ -18,7 +18,9 @@ import com.treadingPlatformApplication.service.PaymentOrderService;
 import org.springframework.beans.factory.annotation.Value;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PaymentOrderServiceImple implements PaymentOrderService {
 
     @Autowired
@@ -41,6 +43,7 @@ public class PaymentOrderServiceImple implements PaymentOrderService {
         paymentOrder.setPaymentMethod(paymentMethod);
         paymentOrder.setAmount(amount);
         paymentOrder.setUser(user);
+        paymentOrder.setStatus(PaymentOrderStatus.PENDING);
 
         return this.paymentOrderRepository.save(paymentOrder);
     }
@@ -53,77 +56,71 @@ public class PaymentOrderServiceImple implements PaymentOrderService {
 
     @Override
     public Boolean proccedPaymentOrder(PaymentOrder paymentOrder, String paymentId) throws RazorpayException {
+        if (paymentOrder == null || paymentId == null) {
+            return false;
+        }
 
-        if(paymentOrder.getStatus().equals(PaymentOrderStatus.PENDING)){
-
-            if(paymentOrder.getPaymentMethod().equals(PaymentMethod.RAZORPAY)){
-                RazorpayClient razorpayClient = new RazorpayClient(apiKey,apiSecretKey);
+        if (paymentOrder.getStatus().equals(PaymentOrderStatus.PENDING)) {
+            if (paymentOrder.getPaymentMethod().equals(PaymentMethod.RAZORPAY)) {
+                RazorpayClient razorpayClient = new RazorpayClient(apiKey, apiSecretKey);
                 Payment payment = razorpayClient.payments.fetch(paymentId);
 
                 Integer amount = payment.get("amount");
                 String status = payment.get("status");
 
-
-                if(status.equals("captured")){
+                if ("captured".equals(status)) {
                     paymentOrder.setStatus(PaymentOrderStatus.SUCCESS);
-                    return  true;
+                    paymentOrderRepository.save(paymentOrder);
+                    return true;
+                } else {
+                    paymentOrder.setStatus(PaymentOrderStatus.FAILED);
                 }
-                paymentOrder.setStatus(PaymentOrderStatus.FAILED);
-                paymentOrderRepository.save(paymentOrder);
-                return  false;
+            } else {
+                paymentOrder.setStatus(PaymentOrderStatus.SUCCESS);
             }
-            paymentOrder.setStatus(PaymentOrderStatus.SUCCESS);
             paymentOrderRepository.save(paymentOrder);
-
-            return  true;
+            return paymentOrder.getStatus().equals(PaymentOrderStatus.SUCCESS);
         }
         return false;
     }
 
+
     @Override
-    public PaymentResponce createRazorpayPaymentLink(User user, Long amount) throws RazorpayException {
-        Long Amount = amount*100;
+    public PaymentResponce createRazorpayPaymentLink(User user, Long amount,Long orderId) throws RazorpayException {
+        Long Amount = amount * 100;
 
-        try{
-            RazorpayClient razorpayClient = new RazorpayClient(apiKey,apiSecretKey);
-            JSONObject paymentLinkRequest  = new JSONObject();
-            paymentLinkRequest.put("amount",amount);
-            paymentLinkRequest.put("currency","INR");
+        try {
+            RazorpayClient razorpayClient = new RazorpayClient(apiKey, apiSecretKey);
+            JSONObject paymentLinkRequest = new JSONObject();
+            paymentLinkRequest.put("amount", Amount);
+            paymentLinkRequest.put("currency", "INR");
 
+            JSONObject customer = new JSONObject();
+            customer.put("name", user.getFullName());
+            customer.put("email", user.getEmail());
+            paymentLinkRequest.put("customer", customer);
 
-            JSONObject customer  = new JSONObject();
-            customer.put("name",user.getFullName());
-
-            customer.put("email",user.getEmail());
-
-            paymentLinkRequest.put("customer",customer);
-
-            //create json object with the notification settings
             JSONObject notify = new JSONObject();
-            notify.put("email",true);
-            paymentLinkRequest.put("notify",notify);
+            notify.put("email", true);
+            paymentLinkRequest.put("notify", notify);
 
-            //set the reminder setting
-            paymentLinkRequest.put("reminder_enable",true);
-
-            paymentLinkRequest.put("callback_url","https://localhost:8080/wallet");
-
-            paymentLinkRequest.put("callback_method","get");
+            paymentLinkRequest.put("reminder_enable", true);
+            paymentLinkRequest.put("callback_url","http://localhost:5173/wallet?orderId=" + orderId);
+            paymentLinkRequest.put("callback_method", "get");
 
             PaymentLink payment = razorpayClient.paymentLink.create(paymentLinkRequest);
-
             String paymentLinkId = payment.get("id");
-            String PaymentLinkUrl = payment.get("short_url");
+            String paymentLinkUrl = payment.get("short_url");
 
-            PaymentResponce paymentResponce = new PaymentResponce();
-
-            paymentResponce.setPaymentUrl(PaymentLinkUrl);
-            return  paymentResponce;
-        }catch (RazorpayException e){
-            System.out.println("Error creating paymeny link"+e.getMessage());
-            throw  new RazorpayException(e.getMessage());
+            PaymentResponce paymentResponse = new PaymentResponce();
+            paymentResponse.setPaymentUrl(paymentLinkUrl);
+            return paymentResponse;
+        } catch (RazorpayException e) {
+            System.out.println("Error creating payment link: " + e.getMessage());
+            throw new RazorpayException(e.getMessage());
         }
     }
+
 
     @Override
     public PaymentResponce createStripePaymentLink(User user, Long amount, Long orderId) throws StripeException {

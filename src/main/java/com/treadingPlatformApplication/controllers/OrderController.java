@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/order")
+@RequestMapping("/api/orders")
 public class OrderController {
 
     @Autowired
@@ -26,6 +26,7 @@ public class OrderController {
     @Autowired
     private UserService userService;
 
+    @PostMapping("/pay")
     public ResponseEntity<Order> payOrderPayment(
             @RequestHeader("Authorization") String jwt,
             @RequestBody OrderReq req
@@ -55,8 +56,8 @@ public class OrderController {
     }
     @GetMapping()
     public ResponseEntity<List<Order>>getAllOrderForUser(@RequestHeader("Authorization") String jwt,
-                                                         @RequestParam(required = false) OrderType order_type,
-                                                         @RequestParam(required = false)String asset_symbol) throws Exception {
+                                                         @RequestParam(name="order_type",required = false) OrderType order_type,
+                                                         @RequestParam(name="asset_symbol",required = false)String asset_symbol) throws Exception {
         if(jwt==null){
             throw new Exception("token missing...");
         }

@@ -29,7 +29,7 @@ public class WatchListController {
         WatchList watchList = this.watchListService.findUserWatchList(user.getId());
         return new ResponseEntity<>(watchList, HttpStatus.OK);
     }
-    @GetMapping("/{watchListId")
+    @GetMapping("/{watchListId}")
     public ResponseEntity<WatchList>getWatchListById(@PathVariable Long watchListId){
         WatchList watchList = this.watchListService.findById(watchListId);
         return new ResponseEntity<>(watchList,HttpStatus.OK);

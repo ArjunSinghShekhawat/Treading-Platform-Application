@@ -7,7 +7,9 @@ import com.treadingPlatformApplication.models.WatchList;
 import com.treadingPlatformApplication.repositories.WatchListRepository;
 import com.treadingPlatformApplication.service.WatchListService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class WatchListImple implements WatchListService {
 
     @Autowired

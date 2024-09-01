@@ -4,7 +4,9 @@ import com.treadingPlatformApplication.models.User;
 import com.treadingPlatformApplication.repositories.PaymentDetailsRepository;
 import com.treadingPlatformApplication.service.PaymentDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class PaymentDetailsServiceImple implements PaymentDetailsService {
 
     @Autowired

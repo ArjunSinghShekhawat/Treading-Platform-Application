@@ -1,6 +1,7 @@
 package com.treadingPlatformApplication.service.implement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treadingPlatformApplication.exception.ResourceNotFoundException;
@@ -8,14 +9,13 @@ import com.treadingPlatformApplication.models.Coin;
 import com.treadingPlatformApplication.repositories.CoinRepository;
 import com.treadingPlatformApplication.service.CoinService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
+
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -31,20 +31,39 @@ public class CoinServiceImple implements CoinService {
 
     @Override
     public List<Coin> getCoinList(int page) {
-        String url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=10&page="+page;
+        String url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=10&page=" + page;
         RestTemplate template = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+        int retries = 5;
+        long waitTime = 1000; // Initial wait time in milliseconds
 
-        try{
-            HttpHeaders headers = new HttpHeaders();
-            HttpEntity<String> entity = new HttpEntity<String>("parameters",headers);
-            ResponseEntity<String>response= template.exchange(url, HttpMethod.GET,entity,String.class);
-            return this.objectMapper.readValue(response.getBody(), new TypeReference<List<Coin>>() {});
-
-
-        }catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        for (int i = 0; i < retries; i++) {
+            try {
+                ResponseEntity<String> response = template.exchange(url, HttpMethod.GET, entity, String.class);
+                return this.objectMapper.readValue(response.getBody(), new TypeReference<List<Coin>>() {});
+            } catch (HttpClientErrorException e) {
+                if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                    System.out.println("Rate limit exceeded. Retrying after " + waitTime + " ms...");
+                    try {
+                        Thread.sleep(waitTime);
+                    } catch (InterruptedException interruptedException) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Thread interrupted during sleep", interruptedException);
+                    }
+                    waitTime *= 2; // Exponential backoff
+                } else {
+                    throw new RuntimeException("Error fetching coin data", e);
+                }
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Error processing JSON response", e);
+            }
         }
+        throw new RuntimeException("Exceeded maximum retry attempts");
     }
+
+
+
 
     @Override
     public String getMarketChart(String coinId, int days) {

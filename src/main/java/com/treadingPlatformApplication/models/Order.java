@@ -8,14 +8,16 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
+@Table(name = "orders")
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ManyToOne
     private User user;
+
 
     @Column(nullable = false)
     private OrderType orderType;
@@ -24,6 +26,7 @@ public class Order {
     private BigDecimal price;
 
     private LocalDateTime timestamp = LocalDateTime.now();
+
 
     @Column(nullable = false)
     private OrderStatus orderStatus;
